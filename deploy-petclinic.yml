@@ -1,0 +1,16 @@
+---
+- name: Deploy PetClinic Application
+  hosts: petclinic-app
+  become: yes
+
+  tasks:
+    - name: Deploy Petclinic JAR
+      copy:
+        src: /path/to/petclinic.jar
+        dest: /app/petclinic.jar
+
+    - name: Run PetClinic JAR
+      shell: |
+        java -jar /path/to/deployment/directory/petclinic.jar > /dev/null 2>&1 &
+      async: 15
+      poll: 0
