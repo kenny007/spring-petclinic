@@ -1,16 +1,21 @@
 ---
 - name: Deploy PetClinic Application
-  hosts: petclinic-app
-  become: yes
-
+  hosts: localhost
+  connection: local
+  gather_facts: no
   tasks:
-    - name: Deploy Petclinic JAR
-      copy:
-        src: /path/to/petclinic.jar
-        dest: /app/petclinic.jar
+    - name: Build the Docker image
+      community.docker.docker_image:
+        build:
+          path: "."
+          tag: "petclinic-app:{{ build_id }}"
+        source: build
 
-    - name: Run PetClinic JAR
-      shell: |
-        java -jar /path/to/deployment/directory/petclinic.jar > /dev/null 2>&1 &
-      async: 15
-      poll: 0
+    - name: Run the Docker container
+      community.docker.docker_container:
+        name: "petclinic"
+        image: "petclinic-app:{{ build_id }}"
+        state: started
+        restart_policy: always
+        published_ports:
+          - "8081:8080"
