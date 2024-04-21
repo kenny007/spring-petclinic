@@ -13,8 +13,11 @@ services:
       - MYSQL_DATABASE=petclinic
     volumes:
       - "./conf.d:/etc/mysql/conf.d:ro"
+    networks:
+      - sonarqube-jenkins-ansible-network
     profiles:
       - mysql
+
   postgres:
     image: postgres:16.1
     ports:
@@ -23,5 +26,11 @@ services:
       - POSTGRES_PASSWORD=petclinic
       - POSTGRES_USER=petclinic
       - POSTGRES_DB=petclinic
+    networks:
+      - sonarqube-jenkins-ansible-network
     profiles:
       - postgres
+
+networks:
+  sonarqube-jenkins-ansible-network:
+    external: true
