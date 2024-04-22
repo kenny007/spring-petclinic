@@ -1,21 +1,22 @@
 ---
 - name: Deploy PetClinic Application
-  hosts: localhost
-  connection: local
-  gather_facts: no
+  hosts: petclinic-host
   tasks:
-    - name: Build the Docker image
-      community.docker.docker_image:
-        build:
-          path: "."
-          tag: "petclinic-app:{{ build_id }}"
-        source: build
+    - name: Find PetClinic JAR file
+      find:
+        paths: "/var/jenkins_home/workspace/Pet Clinic/target/"
+        patterns: 'spring-petclinic-*.jar'
+      register: jar_files
 
-    - name: Run the Docker container
-      community.docker.docker_container:
-        name: "petclinic"
-        image: "petclinic-app:{{ build_id }}"
-        state: started
-        restart_policy: always
-        published_ports:
-          - "8081:8080"
+    - name: Copy PetClinic JAR to the target server
+      copy:
+        src: "{{ item.path }}"
+        dest: "/app/petclinic.jar"
+      with_items: "{{ jar_files.files }}"
+      when: jar_files.matched > 0
+
+    - name: Start the PetClinic Java application
+      shell: |
+        nohup java -jar /app/petclinic.jar > /app/petclinic.log 2>&1 &
+      async: 20
+      poll: 0
