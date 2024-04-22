@@ -1,44 +1,54 @@
-pipeline {
-    agent any
-    stages {
-        stage('Git Checkout ') {
-            steps {
-                git(url: 'https://github.com/kenny007/spring-petclinic.git', branch: 'petty')
-            }
-
-        }
-
-        stage ('Build Code') {
-            steps {
-                script {
-                    def mvnHome = tool 'Maven' // 'Maven' is the name given to the Maven installation in Global Tool Configuration
-                    sh "${mvnHome}/bin/mvn clean package"
-                }
-
-            }
-        }
-
-        stage ('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube-1') { // 'SonarQube' is the name given to the SonarQube server in Jenkins configuration
-                    script {
-                        def mvnHome = tool 'Maven'
-                        sh "${mvnHome}/bin/mvn sonar:sonar"
-                    }
-                }
-            }
-        }
+node {
+    // Checkout stage
+    stage('Git Checkout') {
+        checkout scm  // Assuming the SCM definition is configured in Jenkins
     }
+
+    // Build and Test Code stage
+    stage('Build and Test Code') {
+        def mvnHome = tool 'Maven' // Retrieves the Maven installation configured in Jenkins
+        sh "${mvnHome}/bin/mvn clean package"
+    }
+
+    // Uncommented for demonstration purposes
+    // stage('SonarQube Analysis') {
+    //     withSonarQubeEnv('SonarQube-1') {
+    //         def mvnHome = tool 'Maven'
+    //         sh """
+    //             ${mvnHome}/bin/mvn sonar:sonar \
+    //             -Dsonar.host.url=http://sonarqube-17636:9000 \
+    //             -Dsonar.login=squ_4135f5f6cc746fc4f94d703bd87d97311c9643c4
+    //         """
+    //     }
+    // }
+
+    // Deploy stage
+    stage('Deploy') {
+        docker.image('docker:19.03.12').inside('-v /var/run/docker.sock:/var/run/docker.sock') {
+            sh '''
+            export DOCKER_HOST=unix:///var/run/docker.sock
+            docker tag petclinic-app:${env.BUILD_ID} petclinic-app:latest
+            docker push petclinic-app:latest
+            '''
+        }
+        // Running Ansible playbook
+        ansiblePlaybook(
+            playbook: 'deploy-petclinic.yml',
+            inventory: 'localhost,',
+            extras: "-e build_id=${env.BUILD_ID}"
+        )
+    }
+
+    // Post actions
     post {
         always {
-            echo "Installation ran but not sure if things succeeded!"
+            echo "Things mostly went on well"
         }
         success {
-            echo "This wiwll only run if setup was completely done"
+            echo "Build completed successfully"
         }
         failure {
             echo "Build failed check logs for errors"
         }
     }
-
 }
