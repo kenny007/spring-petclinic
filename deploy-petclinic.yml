@@ -6,6 +6,7 @@
       synchronize:
         src: "/var/jenkins_home/workspace/Pet Clinic/target/spring-petclinic-3.2.0-SNAPSHOT.jar"
         dest: "/petclinic.jar"
+        rsync_path: "/usr/bin/rsync"
         mode: push
       when: inventory_hostname == 'petclinic-17636'
       delegate_to: localhost
