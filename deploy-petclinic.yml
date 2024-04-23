@@ -1,22 +1,28 @@
 ---
 - name: Deploy PetClinic Application
-  hosts: petclinic-host
+  hosts: all
   tasks:
-    - name: Find PetClinic JAR file
+    - name: Find PetClinic JAR file on Jenkins host
       find:
         paths: "/var/jenkins_home/workspace/Pet Clinic/target/"
         patterns: 'spring-petclinic-*.jar'
       register: jar_files
+      delegate_to: localhost  # This ensures the find operation runs on Jenkins host
+      run_once: true  # Ensures this task runs only once, not on every host in the inventory
 
     - name: Copy PetClinic JAR to the target server
-      copy:
+      synchronize:
         src: "{{ item.path }}"
         dest: "/app/petclinic.jar"
-      with_items: "{{ jar_files.files }}"
+        mode: push  # Ensures files are pushed from the control machine to the target
+      loop: "{{ jar_files.files }}"
       when: jar_files.matched > 0
+      delegate_to: localhost  # Delegate the copying task to localhost
+      when: inventory_hostname == 'petclinic-host'
 
     - name: Start the PetClinic Java application
       shell: |
         nohup java -jar /app/petclinic.jar > /app/petclinic.log 2>&1 &
       async: 20
       poll: 0
+      when: inventory_hostname == 'petclinic-host'
