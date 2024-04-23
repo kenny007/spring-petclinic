@@ -8,7 +8,6 @@
         dest: "/petclinic.jar"
         rsync_path: "/usr/bin/rsync"
         mode: push
-      delegate_to: localhost
 
     - debug:
         msg: "The inventory hostname is {{ inventory_hostname }}"
