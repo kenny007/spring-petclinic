@@ -5,14 +5,14 @@
     - name: Copy PetClinic JAR to the target server
       synchronize:
         src: "/var/jenkins_home/workspace/Pet Clinic/target/spring-petclinic-3.2.0-SNAPSHOT.jar"
-        dest: "/app/petclinic.jar"
+        dest: "/petclinic.jar"
         mode: push
       when: inventory_hostname == 'petclinic-host'
       delegate_to: localhost
 
     - name: Start the PetClinic Java application
       shell: |
-        nohup java -jar /app/petclinic.jar > /app/petclinic.log 2>&1 &
+        nohup java -jar /petclinic.jar > /petclinic.log 2>&1 &
       async: 20
       poll: 0
       when: inventory_hostname == 'petclinic-host'
