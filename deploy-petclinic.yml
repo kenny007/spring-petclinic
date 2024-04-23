@@ -7,12 +7,15 @@
         src: "/var/jenkins_home/workspace/Pet Clinic/target/spring-petclinic-3.2.0-SNAPSHOT.jar"
         dest: "/petclinic.jar"
         mode: push
-      when: inventory_hostname == 'petclinic-host'
+      when: inventory_hostname == 'petclinic-17636'
       delegate_to: localhost
+
+    - debug:
+        msg: "The inventory hostname is {{ inventory_hostname }}"
 
     - name: Start the PetClinic Java application
       shell: |
         nohup java -jar /petclinic.jar > /petclinic.log 2>&1 &
       async: 20
       poll: 0
-      when: inventory_hostname == 'petclinic-host'
+      when: inventory_hostname == 'petclinic-17636'
