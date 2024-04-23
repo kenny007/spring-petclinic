@@ -8,7 +8,7 @@
         dest: "/petclinic.jar"
         rsync_path: "/usr/bin/rsync"
         mode: push
-      when: inventory_hostname == 'petclinic-17636'
+      when: inventory_hostname == 'petclinic-host'
       delegate_to: localhost
 
     - debug:
@@ -19,4 +19,4 @@
         nohup java -jar /petclinic.jar > /petclinic.log 2>&1 &
       async: 20
       poll: 0
-      when: inventory_hostname == 'petclinic-17636'
+      when: inventory_hostname == 'petclinic-host'
