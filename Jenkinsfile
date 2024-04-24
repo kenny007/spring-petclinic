@@ -17,7 +17,7 @@ node {
     //         sh """
     //             ${mvnHome}/bin/mvn sonar:sonar \
     //             -Dsonar.host.url=http://sonarqube-17636:9000 \
-    //             -Dsonar.login=squ_4135f5f6cc746fc4f94d703bd87d97311c9643c4
+    //             -Dsonar.login=
     //         """
     //     }
     // }
